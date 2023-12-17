@@ -1,4 +1,4 @@
-FROM cruizba/ubuntu-dind
+FROM cruizba/ubuntu-dind:focal-24.0.7@sha256:3117fe290be5f9739007a166ddef2f75edfbd2ed85b5d8ece0593bcb022b5595
 
 USER root
 # RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \

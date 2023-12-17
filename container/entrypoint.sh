@@ -21,7 +21,7 @@ if [ "${DOCKER_USER-}" ]; then
 fi
 
 # load dockerd
-sudo /bin/bash /usr/local/bin/startup.sh
+sudo /bin/bash /usr/local/bin/start-docker.sh
 docker buildx create --use \
   --driver=docker-container \
   --driver-opt image=moby/buildkit:buildx-stable-1 \

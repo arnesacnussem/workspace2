@@ -127,12 +127,14 @@ spec:
     {{- end }}
       serviceAccountName: {{ template "code-server.serviceAccountName" . }}
       volumes:
+{{- if .Values.docker }}
       - name: docker-config
         secret:
           secretName: {{ include "code-server.fullname" . }}-docker-login
           items:
             - key: config.json
               path: config.json
+{{- end }}
       - name: data
       {{- if .Values.persistence.enabled }}
         {{- if not .Values.persistence.hostPath }}
