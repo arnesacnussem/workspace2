@@ -1,0 +1,81 @@
+FROM cruizba/ubuntu-dind
+
+USER root
+# RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
+#     sed -i 's|security.debian.org/debian-security|mirrors.ustc.edu.cn/debian-security|g' /etc/apt/sources.list && \
+#     sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list
+    
+ENV LANG=en_US.UTF-8
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y \
+    curl dumb-init zsh htop locales man nano git \
+    ca-certificates apt-transport-https software-properties-common wget \
+    git-lfs procps openssh-client sudo vim.tiny lsb-release bash \
+    rsync build-essential bash-completion && \
+    apt-get clean
+
+# install fnm
+RUN curl -fsSL https://fnm.vercel.app/install | bash
+
+# Install miniconda
+ENV CONDA_DIR /home/coder/.anaconda
+RUN wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda3.sh && \
+    /bin/bash /tmp/miniconda3.sh -b -p $CONDA_DIR && \
+    rm /tmp/miniconda3.sh && chown -R 1000:1000 $CONDA_DIR
+
+# install code-server
+RUN wget -O /tmp/cs.deb https://github.com/coder/code-server/releases/download/v4.16.1/code-server_4.16.1_amd64.deb && \
+    dpkg -i /tmp/cs.deb && \
+    rm /tmp/cs.deb
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && \
+    mv kubectl /bin && \
+    /bin/kubectl completion bash && \
+    /bin/kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
+
+RUN wget -O /tmp/helm.tar.gz "https://get.helm.sh/helm-v3.12.0-linux-amd64.tar.gz" && \
+    tar -zxvf /tmp/helm.tar.gz linux-amd64/helm --strip-components=1 && \
+    mv helm /bin && \
+    rm /tmp/helm.tar.gz && \
+    /bin/helm completion bash && \
+    /bin/helm completion bash | tee /etc/bash_completion.d/helm > /dev/null
+
+RUN wget -O /tmp/velero.tar.gz https://github.com/vmware-tanzu/velero/releases/download/v1.12.0/velero-v1.12.0-linux-amd64.tar.gz && \
+    tar -zxvf /tmp/velero.tar.gz --strip-components=1 && \
+    mv velero /bin && \
+    rm /tmp/velero.tar.gz && \
+    /bin/velero completion bash && \
+    /bin/velero completion bash | tee /etc/bash_completion.d/velero > /dev/null
+    
+RUN sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
+    && locale-gen
+RUN adduser --gecos '' --disabled-password coder && \
+    echo "coder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/nopasswd
+
+COPY fixuid-0.5.1-linux-amd64.tar.gz /tmp
+RUN ARCH="$(dpkg --print-architecture)" && \
+    cat /tmp/fixuid-0.5.1-linux-amd64.tar.gz | tar -C /usr/local/bin -xzf - && \
+    chown root:root /usr/local/bin/fixuid && \
+    chmod 4755 /usr/local/bin/fixuid && \
+    mkdir -p /etc/fixuid && \
+    printf "user: coder\ngroup: coder\n" > /etc/fixuid/config.yml
+
+# fix docker permission =_=
+RUN sed -i '2s/$/ -G 1000/' /etc/supervisor/conf.d/dockerd.conf
+COPY daemon.json /etc/docker/daemon.json
+COPY buildkitd.toml /buildkitd.toml
+
+EXPOSE 8080
+USER 1000
+ENV USER=coder
+WORKDIR /home/coder
+USER coder
+# Put conda in path so we can use conda activate
+ENV PATH=$CONDA_DIR/bin:$PATH
+COPY .condarc .condarc
+COPY .bashrc .bashrc
+COPY entrypoint.sh /usr/bin/entrypoint.sh
+ENTRYPOINT ["/usr/bin/entrypoint.sh", "--bind-addr", "0.0.0.0:8080", "."]

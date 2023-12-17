@@ -1,0 +1,6 @@
+apiVersion: v2
+name: workspace2
+description: A Helm chart for sacnussem/workspace2 based on chart from code/code-server
+type: application
+version: 1.0.0
+appVersion: latest
