@@ -36,7 +36,7 @@ jobs:
       -
         name: Pack release
         run: |
-          tar zcvf "workspace2-$GITHUB_REF_NAME.tar.gz" chart/* --transform s/chart/workspace2-helm/
+          tar zcvf "chart.tar.gz" chart/* --transform s/chart/workspace2-helm/
       -
         name: Upload Release
         uses: softprops/action-gh-release@v1
