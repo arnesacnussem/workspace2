@@ -13,7 +13,7 @@ RUN apt-get update \
     curl dumb-init zsh htop locales man nano git \
     ca-certificates apt-transport-https software-properties-common wget \
     git-lfs procps openssh-client sudo vim.tiny lsb-release bash \
-    rsync build-essential bash-completion && \
+    rsync build-essential bash-completion unzip && \
     apt-get clean
 
 # install fnm
