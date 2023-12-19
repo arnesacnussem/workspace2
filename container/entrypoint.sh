@@ -20,12 +20,9 @@ if [ "${DOCKER_USER-}" ]; then
   fi
 fi
 
+# fix ~/.docker permission
 # load dockerd
 sudo /bin/bash /usr/local/bin/start-docker.sh
-docker buildx create --use \
-  --driver=docker-container \
-  --driver-opt image=moby/buildkit:buildx-stable-1 \
-  --config /buildkitd.toml
 
 # load code-server backent
 exec dumb-init /usr/bin/code-server "$@"

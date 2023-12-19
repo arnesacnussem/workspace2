@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+piVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "code-server.fullname" . }}
@@ -36,8 +36,7 @@ spec:
         command: [ "/bin/bash", "-c", "--" ]
         args:
           - rsync --update -raz --progress /home/coder/. /data_temp/
-          - chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }} /data_temp;
-          - mkdir -p /home/coder/.docker
+          - mkdir -p /home/coder/.docker/config
           - mv /tmp/dockerLogin/config.json /home/coder/.docker/config.json
         securityContext:
           runAsUser: {{ .Values.volumePermissions.securityContext.runAsUser }}

@@ -20,7 +20,7 @@ RUN apt-get update \
 RUN curl -fsSL https://fnm.vercel.app/install | bash
 
 # Install miniconda
-ENV CONDA_DIR /home/coder/.anaconda
+ENV CONDA_DIR /miniconda
 RUN wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda3.sh && \
     /bin/bash /tmp/miniconda3.sh -b -p $CONDA_DIR && \
     rm /tmp/miniconda3.sh && chown -R 1000:1000 $CONDA_DIR
@@ -67,6 +67,7 @@ RUN ARCH="$(dpkg --print-architecture)" && \
 RUN sed -i '2s/$/ -G 1000/' /etc/supervisor/conf.d/dockerd.conf
 COPY daemon.json /etc/docker/daemon.json
 COPY buildkitd.toml /buildkitd.toml
+COPY setup-buildx.sh /usr/local/bin
 
 EXPOSE 8080
 USER 1000
@@ -77,5 +78,10 @@ USER coder
 ENV PATH=$CONDA_DIR/bin:$PATH
 COPY .condarc .condarc
 COPY .bashrc .bashrc
+
+RUN /bin/bash -c "conda init"
+RUN sudo chown -R 1000:1000 /home/coder
+RUN mkdir -p /home/coder/.docker
+
 COPY entrypoint.sh /usr/bin/entrypoint.sh
 ENTRYPOINT ["/usr/bin/entrypoint.sh", "--bind-addr", "0.0.0.0:8080", "."]
