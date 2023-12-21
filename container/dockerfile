@@ -79,7 +79,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH
 COPY .condarc .condarc
 COPY .bashrc .bashrc
 
-RUN conda init
+RUN $CONDA_DIR/bin/conda init
 RUN sudo chown -R 1000:1000 /home/coder
 RUN mkdir -p /home/coder/.docker
 
