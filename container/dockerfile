@@ -16,9 +16,6 @@ RUN apt-get update \
     rsync build-essential bash-completion unzip && \
     apt-get clean
 
-# install fnm
-RUN curl -fsSL https://fnm.vercel.app/install | bash
-
 # Install miniconda
 ENV CONDA_DIR /miniconda
 RUN wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda3.sh && \
@@ -73,7 +70,13 @@ EXPOSE 8080
 USER 1000
 ENV USER=coder
 WORKDIR /home/coder
+
+# Install components for user coder
 USER coder
+
+# install fnm
+RUN curl -fsSL https://fnm.vercel.app/install | bash
+
 # Put conda in path so we can use conda activate
 ENV PATH=$CONDA_DIR/bin:$PATH
 COPY .condarc .condarc
