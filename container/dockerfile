@@ -13,7 +13,7 @@ RUN apt-get update \
     curl dumb-init zsh htop locales man nano git \
     ca-certificates apt-transport-https software-properties-common wget \
     git-lfs procps openssh-client sudo vim.tiny lsb-release bash \
-    rsync build-essential bash-completion unzip && \
+    rsync build-essential bash-completion unzip zip && \
     apt-get clean
 
 # Install miniconda
@@ -66,6 +66,11 @@ COPY daemon.json /etc/docker/daemon.json
 COPY buildkitd.toml /buildkitd.toml
 COPY setup-buildx.sh /usr/local/bin
 
+
+# install sdkman
+RUN export SDKMAN_DIR="/sdkman" && curl -s "https://get.sdkman.io" | bash
+RUN chmod -R 777 /sdkman
+
 EXPOSE 8080
 USER 1000
 ENV USER=coder
@@ -73,16 +78,17 @@ WORKDIR /home/coder
 
 # Install components for user coder
 USER coder
-
-# install fnm
-RUN curl -fsSL https://fnm.vercel.app/install | bash
-
-# Put conda in path so we can use conda activate
 ENV PATH=$CONDA_DIR/bin:$PATH
 COPY .condarc .condarc
 COPY .bashrc .bashrc
 RUN sudo chown -R 1000:1000 /home/coder
 RUN mkdir -p /home/coder/.docker
+# install fnm
+RUN curl -fsSL https://fnm.vercel.app/install | bash
+RUN /home/coder/.local/share/fnm/fnm install 21
+
+
+
 
 COPY entrypoint.sh /usr/bin/entrypoint.sh
 ENTRYPOINT ["/usr/bin/entrypoint.sh", "--bind-addr", "0.0.0.0:8080", "."]
