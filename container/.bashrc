@@ -112,7 +112,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export PATH=/home/coder/.anaconda/bin:$PATH
+export PATH=/home/coder/.local/share/fnm:$PATH
 alias code="/usr/bin/code-server"
 
 export DISPLAY=:0
