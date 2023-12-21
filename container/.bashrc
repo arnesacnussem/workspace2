@@ -132,6 +132,7 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+export GRADLE_HOME=~/.gradle
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/sdkman"

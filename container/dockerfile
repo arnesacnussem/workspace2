@@ -68,8 +68,18 @@ COPY setup-buildx.sh /usr/local/bin
 
 
 # install sdkman
-RUN export SDKMAN_DIR="/sdkman" && curl -s "https://get.sdkman.io" | bash
+ENV SDKMAN_DIR=/sdkman
+RUN curl -s "https://get.sdkman.io" | bash
 RUN chmod -R 777 /sdkman
+
+# install jdk
+SHELL ["/bin/bash", "-c"]
+RUN source "$SDKMAN_DIR/bin/sdkman-init.sh" && \
+    export JDK_INSTALL=$(sdk list java | grep 17.*jbr | awk -F'|' '{print $NF}') && \
+    sdk install java $JDK_INSTALL
+
+ENV JAVA_HOME="$SDKMAN_DIR/candidates/java/current"
+ENV PATH="$JAVA_HOME/bin:$PATH"
 
 EXPOSE 8080
 USER 1000
@@ -83,12 +93,20 @@ COPY .condarc .condarc
 COPY .bashrc .bashrc
 RUN sudo chown -R 1000:1000 /home/coder
 RUN mkdir -p /home/coder/.docker
-# install fnm
-RUN curl -fsSL https://fnm.vercel.app/install | bash
-RUN /home/coder/.local/share/fnm/fnm install 21
 
 
+ENV NVM_DIR /opt/nvm
+ENV NODE_VERSION 21
 
+# Install nvm with node and npm, yarn
+RUN sudo mkdir /opt/nvm && \
+    sudo chmod 777 /opt/nvm && \
+    curl https://raw.githubusercontent.com/creationix/nvm/v0.39.7/install.sh | bash && \
+    . $NVM_DIR/nvm.sh && \
+    nvm install $NODE_VERSION && \
+    nvm alias default $NODE_VERSION && \
+    nvm use default && \
+    npm i -g yarn
 
 COPY entrypoint.sh /usr/bin/entrypoint.sh
 ENTRYPOINT ["/usr/bin/entrypoint.sh", "--bind-addr", "0.0.0.0:8080", "."]
