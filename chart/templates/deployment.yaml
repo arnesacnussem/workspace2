@@ -41,9 +41,11 @@ spec:
         securityContext:
           runAsUser: {{ .Values.volumePermissions.securityContext.runAsUser }}
         volumeMounts:
+{{- if .Values.docker }}
         - name: docker-config
           mountPath: /tmp/dockerLogin
           readOnly: true
+{{- end }}
         - name: data
           mountPath: /data_temp
 {{- if .Values.extraInitContainers }}
